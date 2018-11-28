@@ -6,6 +6,7 @@
 package algorithms;
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
 
 /**
  *
@@ -19,6 +20,7 @@ public class hw3 extends javax.swing.JFrame {
     BigInteger n;
     BigInteger N;
     BigInteger[] p = new BigInteger[4];
+    SecureRandom random = new SecureRandom();
             
     /**
      * Creates new form hw3
@@ -202,6 +204,15 @@ public class hw3 extends javax.swing.JFrame {
         BigInteger[] t = ECurve.mul(a,u,d,p[3]);
         txtOutput.append("\r\n");
         txtOutput.append("a1 * u = " + t[0] + ", "  + t[1] +  "\r\n");
+        BigInteger m = new BigInteger(n.bitLength(), random);
+        m = m.mod(n);
+        BigInteger[] b = ECurve.exp(a, m, d, d);
+        txtOutput.append("\r\n");
+        txtOutput.append("b = " + b[0] + ", "  + b[1] +  "\r\n");
+        t = ECurve.mul(a,b,d,p[3]);
+        txtOutput.append("\r\n");
+        txtOutput.append("a1 * b = " + t[0] + ", "  + t[1] +  "\r\n");
+        
     }//GEN-LAST:event_jButton1MouseClicked
 
     /**

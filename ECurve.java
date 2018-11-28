@@ -119,13 +119,15 @@ public class ECurve {
         if (m.equals(BigInteger.ONE)) {
             b[0] = a[0];
             b[1] = a[1];
-        } else if (myB.mod(two).equals(BigInteger.ONE)) {
-            return myB.multiply(exp(myB,myP.subtract(BigInteger.ONE)));
+        } else if (m.mod(two).equals(BigInteger.ONE)) {
+            b = exp(a,m.subtract(BigInteger.ONE),d,p);
+            b[0] = b[0].multiply(a[0]).mod(p);
+            b[1] = b[1].multiply(a[1]).mod(p);
         } else {
-            BigInteger temp = exp(myB, myP.divide(two));
-            return temp.multiply(temp);
+            b = exp(a, m.divide(two),d,p);
+            b[0] = b[0].multiply(b[0]).mod(p);
+            b[1] = b[1].multiply(b[0]).mod(p);
         }
-        
         
         return b;
     }
