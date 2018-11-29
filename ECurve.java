@@ -46,17 +46,6 @@ public class ECurve {
 //        factor(divisor);
 //        factor(N.divide(divisor));
 //    }
-    public class Tuple<X, Y, Z> {
-        public final X x;
-        public final Y y;
-        public final Z z;
-
-        public Tuple(X x, Y y, Z z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-    }
 
     /**
      * ECPoint
@@ -146,6 +135,7 @@ public class ECurve {
         return b;
     }
     
+
     /**
      * Implement a method BigInteger[] rho(BigInteger[] a,
         BigInteger[] b, BigInteger d, BigInteger p, BigInteger n) that,
@@ -155,29 +145,23 @@ public class ECurve {
         result must be contained in a BigInteger array containing exactly 2
         elements, 𝑚 and 𝑘, in this order.
      */
-    static BigInteger[] rho(BigInteger a, BigInteger b, BigInteger d, 
-        BigInteger p, BigInteger n) {
-        
+    static BigInteger[] rho(BigInteger a, BigInteger b, BigInteger d, BigInteger p, BigInteger n) {
+
         BigInteger k = BigInteger.ZERO;
         BigInteger m;
         BigInteger[] zval = new BigInteger[2];
-        BigInteger[] result = new BigInteger[2]; // [m,k]
-        BigInteger[] kvals = new BigInteger[3];
-        BigInteger[] kvals2 = new BigInteger[3];
-
-        // Set values for k = 0
-        kvals[0] = BigInteger.ZERO;
-        kvals[1] = BigInteger.ZERO;
         zval[0] = BigInteger.ZERO;
         zval[1] = BigInteger.ONE;
-        kvals[3] = zval;
+        BigInteger[] result = new BigInteger[2]; // [m,k]
+        Tuple kvals = new Tuple(BigInteger.ZERO, BigInteger.ZERO, zval);
+        Tuple kvals2 = new Tuple(BigInteger.ZERO, BigInteger.ZERO, zval);
 
         // set values for k = 1
         k.add(BigInteger.ONE);
         kvals = rho_update(kvals, a, b, p);
         kvals2 = rho_update(kvals, a, b, p);
 
-        while (kvals[2] != kvals2[2]) { // until z_k == z_2k
+        while (kvals.Z != kvals2.Z) { // until z_k == z_2k
             k.add(BigInteger.ONE);
 
             // update k values
@@ -188,45 +172,59 @@ public class ECurve {
             kvals2 = rho_update(kvals2, a, b, p); // run it twice
 
             // handle exceptions
-            if (kvals[1].subtract(kvals2[1]) == BigInteger.ZERO.mod(n)) {
+            if (kvals.A.subtract(kvals2.A) == BigInteger.ZERO.mod(n)) {
                 throw new IllegalArgumentException("Error in initial variables");
             }
         }
 
         // Determine m from sextuple values, then return results
-        m = (kvals2[1].subtract(kvals[1])).divide(kvals2[0].subtract(kvals[0])).mod(n);
+        m = (kvals2.B.subtract(kvals.B)).divide(kvals2.A.subtract(kvals.A)).mod(n);
         result[0] = m;
         result[1] = k;
         return result;
     }
-    
-    /**
-     * returns a new array with rho-updated values based on the the input array
-     */
-    private static BigInteger[] rho_update(BigInteger[] kvals, BigInteger a, 
-                                BigInteger b, BigInteger p) {
 
-        BigInteger[] newvals = new BigInteger[3];
+    /**
+     * Class to hold k values in rho function
+     */
+    public class Tuple {
+        public BigInteger A;
+        public BigInteger B;
+        public BigInteger[] Z;
+
+        public Tuple(BigInteger x, BigInteger y, BigInteger[] z) {
+            this.A = x;
+            this.B = y;
+            this.Z = z;
+        }
+    }
+
+    /**
+     * Returns a new array with rho-updated values based on the the input array
+     * For use with rho function.
+     */
+    private static BigInteger[] rho_update(Tuple theseKvals, BigInteger a, BigInteger b, BigInteger p) {
+
+        Tuple newvals;
         BigInteger two = new BigInteger("2");
         BigInteger three = new BigInteger("3");
-        BigInteger[] zval = kvals[2];
-        BigInteger xCoord = zval[0];
+        BigInteger xCoord = theseKvals.Z[0];
 
-        switch (xCoord.mod(three)) {
+        switch (xCoord.mod(three).intValue()) {
             case 0:
-                newvals[0] = kvals[0].add(BigInteger.ONE).mod(p);
-                newvals[1] = kvals[1];
-                newvals[2] = b.multiply(kvals[2]).mod(p);
+                newvals.A = theseKvals.A.add(BigInteger.ONE).mod(p);
+                newvals.B = theseKvals.B;
+                newvals.Z = theseKvals.Z.multiply(b).mod(p);
                 break;
             case 1:
-                newvals[0] = kvals[0].multiply(two).mod(p);
-                newvals[1] = kvals[1].multiply(two).mod(p);
-                newvals[2] = kvals[2].multiply(kvals[2]).mod(p);
+                newvals.A = theseKvals.A.multiply(two).mod(p);
+                newvals.B = theseKvals.B.multiply(two).mod(p);
+                newvals.Z = theseKvals.Z  ??  theseKvals.Z;
                 break;
             case 2:
-                newvals[0] = kvals[0];
-                newvals[1] = kvals[1].add(BigInteger.ONE).mod(p);
-                newvals[2] = a.multiply(kvals[2]).mod(p);
+                newvals.A = theseKvals.A;
+                newvals.B = theseKvals.B.add(BigInteger.ONE).mod(p);
+                newvals.Z = a.multiply(theseKvals.Z).mod(p);
                 break;
             return newvals; 
         }
