@@ -46,7 +46,18 @@ public class ECurve {
 //        factor(divisor);
 //        factor(N.divide(divisor));
 //    }
-    
+    public class Tuple<X, Y, Z> {
+        public final X x;
+        public final Y y;
+        public final Z z;
+
+        public Tuple(X x, Y y, Z z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+    }
+
     /**
      * ECPoint
      * 
@@ -161,13 +172,13 @@ public class ECurve {
         sextuple[3] = zval;
 
         // set values for k = 1
-        kupdate = update(Arrays.copyOfRange(sextuple, 0, 3), a, b, p);
+        kupdate = rho_update(Arrays.copyOfRange(sextuple, 0, 3), a, b, p);
         sextuple[0] = kupdate[0]; // alpha_k
         sextuple[1] = kupdate[1]; // beta_k
         sextuple[2] = kupdate[2]; // zeta_k
 
         // set values for k = 2
-        kupdate2 = update(Arrays.copyOfRange(sextuple, 0, 3), a, b, p);
+        kupdate2 = rho_update(Arrays.copyOfRange(sextuple, 0, 3), a, b, p);
         sextuple[3] = kupdate2[0]; // alpha_2k
         sextuple[4] = kupdate2[1]; // beta_2k
         sextuple[5] = kupdate2[2]; // zeta_2k
