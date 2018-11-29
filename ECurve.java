@@ -69,6 +69,7 @@ public class ECurve {
     
  
     /**
+     * Computes the product of two points on the elliptical curve 
      * Implement a method BigInteger[] mul(BigInteger[] a1,
         BigInteger[] a2, BigInteger d, BigInteger p) that computes point
         BigInteger[] a3 as specified by the above formula from the given
@@ -76,8 +77,9 @@ public class ECurve {
         containing exactly 2 elements each, namely, its x-coordinate and
         its y-coordinate) and given values of 𝑑 and 𝑝.
      */
-    static BigInteger[] mul(BigInteger[] a1,
-        BigInteger[] a2, BigInteger d, BigInteger p) {
+    static BigInteger[] mul(BigInteger[] a1, BigInteger[] a2, 
+        BigInteger d, BigInteger p) {
+
         BigInteger[] a3 = new BigInteger[2];
         BigInteger t1, t2, t3, t4;
         
@@ -111,20 +113,21 @@ public class ECurve {
         curve point 𝑏 = 𝑎^𝑚 given a point 𝑎 represented as above, a
         BigInteger exponent 𝑚, and values of 𝑑 and 𝑝.
      */
-    static BigInteger[] exp(BigInteger[] a,
-        BigInteger m, BigInteger d, BigInteger p){
+    static BigInteger[] exp(BigInteger[] a, BigInteger m, BigInteger d, 
+        BigInteger p){
+
         BigInteger [] b = new BigInteger [2];
         BigInteger two = new BigInteger("2");
         
         if (m.equals(BigInteger.ONE)) {
             b[0] = a[0];
             b[1] = a[1];
-        } else if (m.mod(two).equals(BigInteger.ONE)) {
-            b = exp(a,m.subtract(BigInteger.ONE),d,p);
+        } else if (m.mod(two).equals(BigInteger.ONE)) { // if m is odd
+            b = exp(a,m.subtract(BigInteger.ONE),d,p); // recursive call
             b[0] = b[0].multiply(a[0]).mod(p);
             b[1] = b[1].multiply(a[1]).mod(p);
-        } else {
-            b = exp(a, m.divide(two),d,p);
+        } else { // m is even
+            b = exp(a, m.divide(two),d,p);  // recursive call
             b[0] = b[0].multiply(b[0]).mod(p);
             b[1] = b[1].multiply(b[0]).mod(p);
         }
@@ -141,12 +144,97 @@ public class ECurve {
         result must be contained in a BigInteger array containing exactly 2
         elements, 𝑚 and 𝑘, in this order.
      */
-    static BigInteger[] rho(BigInteger[] a,
-        BigInteger[] b, BigInteger d, BigInteger p, BigInteger n) {
+    static BigInteger[] rho(BigInteger a, BigInteger b, BigInteger d, 
+        BigInteger p, BigInteger n) {
         
-        return null;
+        BigInteger[] sextuple = new BigInteger[6]; // (ak, bk, zk, a2k, b2k, z2k)
+        Int k = 2;
+        BigInteger[] zval = new BigInteger[2]; 
+        BigInteger[] result = new BigInteger[2]; // [m,k]
+        BigInteger[] kupdate = new BigInteger[3];
+
+        // Set values for k = 0
+        sextuple[0] = BigInteger.ZERO;
+        sextuple[1] = BigInteger.ZERO;
+        zval[0] = BigInteger.ZERO;
+        zval[1] = BigInteger.ONE;
+        sextuple[3] = zval;
+
+        // set values for k = 1
+        kupdate = update(Arrays.copyOfRange(sextuple, 0, 3), a, b, p);
+        sextuple[0] = kupdate[0]; // alpha_k
+        sextuple[1] = kupdate[1]; // beta_k
+        sextuple[2] = kupdate[2]; // zeta_k
+
+        // set values for k = 2
+        kupdate2 = update(Arrays.copyOfRange(sextuple, 0, 3), a, b, p);
+        sextuple[3] = kupdate2[0]; // alpha_2k
+        sextuple[4] = kupdate2[1]; // beta_2k
+        sextuple[5] = kupdate2[2]; // zeta_2k
+        
+        k = 3;
+        while (sextuple[2] != sextuple[5]) {  // until z_k == z_2k
+            k += 1;
+
+            // update k
+            kupdate = rho_update(Arrays.copyOfRange(sextuple, 0, 3), a, b, p);
+            sextuple[0] = kupdate[0]; // alpha_k
+            sextuple[1] = kupdate[1]; // beta_k
+            sextuple[2] = kupdate[2]; // zeta_k
+
+            // update 2k
+            kupdate2 = rho_update(Arrays.copyOfRange(sextuple, 3, 5), a, b, p);
+            kupdate2 = rho_update(kupdate2, a, b, p);
+            sextuple[3] = kupdate2[0]; // alpha_2k
+            sextuple[4] = kupdate2[1]; // beta_2k
+            sextuple[5] = kupdate2[2]; // zeta_2k
+
+            // handle exceptions
+            if (sextuple[1].subtract(sextuple[4]) == BigInteger.ZERO.mod(n)) {
+                throw new IllegalArgumentException("Error in initial variables");
+            }
+        }        
+        
+        // Determine m from sextuple values, then return results
+        m = (sextuple[4].subtract(sextuple[1])
+            ).divide(sextuple[3].subtract(sextuple[0])
+            ).mod(n);
+        result[0] = m;
+        result[1] = k;    
+        return result;
     }
     
+    /**
+     * returns a new array with rho-updated values based on the the input array
+     */
+    private BigInteger[] rho_update(BigInteger[] kvals, BigInteger a, 
+                                BigInteger b, BigInteger p) {
+
+        BigInteger[] newvals = new BigInteger[3];
+        BigInteger two = new BigInteger("2");
+        BigInteger[] zval = kvals[2];
+        BigInteger xCoord = zval[0];
+        
+        switch (xCoord.mod(BigInteger("3"))){
+            case 0:
+                newvals[0] = kvals[0].add(BigInteger.ONE).mod(p);
+                newvals[1] = kvals[1];
+                newvals[2] = b.multiply(kvals[2]).mod(p);
+                break;
+            case 1:
+                newvals[0] = kvals[0].multiply(two).mod(p);
+                newvals[1] = kvals[1].multiply(two).mod(p);
+                newvals[2] = kvals[2].multiply(kvals[2]).mod(p);
+                break;
+            case 2:
+                newvals[0] = kvals[0];
+                newvals[1] = kvals[1].add(BigInteger.ONE).mod(p);
+                newvals[2] = a.multiply(kvals[2]).mod(p);
+                break;
+            return newvals; 
+        }
+    }
+
     /**
      * Implement a method long check(BigInteger[] a, BigInteger d,
         BigInteger p, BigInteger n) that, given a point 𝑎 and the values
@@ -176,4 +264,32 @@ public class ECurve {
         return a.multiply(b.modInverse(p)).mod(p);
     }
  
+}
+
+public final class App {
+    private App() {
+    }
+
+    /**
+     * Runs 
+     * 
+     * @param args The arguments of the program.
+     */
+    public static void main(String[] args) {
+        /*
+        private string txtOutput = "";
+        private int p =  Math.pow(2, 16) - 17;  // prime number
+        private int d = 154;    // coefficient of the curve
+        private int n = 16339;   // given number of points on the curve
+        private List<Integer> a = new ArrayList<>(12, 61833);  // two points on the curve
+        private int N = 1000;
+        
+        private List<Integer>  u = new ArrayList<>(0, 1);    // the unit (neutral) element of point multiplication
+
+        BigInteger[] t = ECurve.mul(a, u, d, p[3]);
+        txtOutput.append("\r\n");
+        txtOutput.append("a1 * u = " + t[0] + ", " + t[1] + "\r\n");
+        System.out.println(txtOutput);
+        */
+    }
 }
