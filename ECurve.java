@@ -158,75 +158,61 @@ public class ECurve {
     static BigInteger[] rho(BigInteger a, BigInteger b, BigInteger d, 
         BigInteger p, BigInteger n) {
         
-        BigInteger[] sextuple = new BigInteger[6]; // (ak, bk, zk, a2k, b2k, z2k)
-        Int k = 2;
-        BigInteger[] zval = new BigInteger[2]; 
+        BigInteger k = BigInteger.ZERO;
+        BigInteger m;
+        BigInteger[] zval = new BigInteger[2];
         BigInteger[] result = new BigInteger[2]; // [m,k]
-        BigInteger[] kupdate = new BigInteger[3];
+        BigInteger[] kvals = new BigInteger[3];
+        BigInteger[] kvals2 = new BigInteger[3];
 
         // Set values for k = 0
-        sextuple[0] = BigInteger.ZERO;
-        sextuple[1] = BigInteger.ZERO;
+        kvals[0] = BigInteger.ZERO;
+        kvals[1] = BigInteger.ZERO;
         zval[0] = BigInteger.ZERO;
         zval[1] = BigInteger.ONE;
-        sextuple[3] = zval;
+        kvals[3] = zval;
 
         // set values for k = 1
-        kupdate = rho_update(Arrays.copyOfRange(sextuple, 0, 3), a, b, p);
-        sextuple[0] = kupdate[0]; // alpha_k
-        sextuple[1] = kupdate[1]; // beta_k
-        sextuple[2] = kupdate[2]; // zeta_k
+        k.add(BigInteger.ONE);
+        kvals = rho_update(kvals, a, b, p);
+        kvals2 = rho_update(kvals, a, b, p);
 
-        // set values for k = 2
-        kupdate2 = rho_update(Arrays.copyOfRange(sextuple, 0, 3), a, b, p);
-        sextuple[3] = kupdate2[0]; // alpha_2k
-        sextuple[4] = kupdate2[1]; // beta_2k
-        sextuple[5] = kupdate2[2]; // zeta_2k
-        
-        k = 3;
-        while (sextuple[2] != sextuple[5]) {  // until z_k == z_2k
-            k += 1;
+        while (kvals[2] != kvals2[2]) { // until z_k == z_2k
+            k.add(BigInteger.ONE);
 
-            // update k
-            kupdate = rho_update(Arrays.copyOfRange(sextuple, 0, 3), a, b, p);
-            sextuple[0] = kupdate[0]; // alpha_k
-            sextuple[1] = kupdate[1]; // beta_k
-            sextuple[2] = kupdate[2]; // zeta_k
+            // update k values
+            kvals = rho_update(kvals, a, b, p);
 
-            // update 2k
-            kupdate2 = rho_update(Arrays.copyOfRange(sextuple, 3, 5), a, b, p);
-            kupdate2 = rho_update(kupdate2, a, b, p);
-            sextuple[3] = kupdate2[0]; // alpha_2k
-            sextuple[4] = kupdate2[1]; // beta_2k
-            sextuple[5] = kupdate2[2]; // zeta_2k
+            // update 2k values
+            kvals2 = rho_update(kvals2, a, b, p);
+            kvals2 = rho_update(kvals2, a, b, p); // run it twice
 
             // handle exceptions
-            if (sextuple[1].subtract(sextuple[4]) == BigInteger.ZERO.mod(n)) {
+            if (kvals[1].subtract(kvals2[1]) == BigInteger.ZERO.mod(n)) {
                 throw new IllegalArgumentException("Error in initial variables");
             }
-        }        
-        
+        }
+
         // Determine m from sextuple values, then return results
-        m = (sextuple[4].subtract(sextuple[1])
-            ).divide(sextuple[3].subtract(sextuple[0])
-            ).mod(n);
+        m = (kvals2[1].subtract(kvals[1])).divide(kvals2[0].subtract(kvals[0])).mod(n);
         result[0] = m;
-        result[1] = k;    
+        result[1] = k;
         return result;
     }
     
     /**
      * returns a new array with rho-updated values based on the the input array
      */
-    private BigInteger[] rho_update(BigInteger[] kvals, BigInteger a, 
+    private static BigInteger[] rho_update(BigInteger[] kvals, BigInteger a, 
                                 BigInteger b, BigInteger p) {
 
         BigInteger[] newvals = new BigInteger[3];
         BigInteger two = new BigInteger("2");
+        BigInteger three = new BigInteger("3");
         BigInteger[] zval = kvals[2];
         BigInteger xCoord = zval[0];
-        
-        switch (xCoord.mod(BigInteger("3"))){
+
+        switch (xCoord.mod(three)) {
             case 0:
                 newvals[0] = kvals[0].add(BigInteger.ONE).mod(p);
                 newvals[1] = kvals[1];
