@@ -145,7 +145,8 @@ public class ECurve {
         result must be contained in a BigInteger array containing exactly 2
         elements, 𝑚 and 𝑘, in this order.
      */
-    static BigInteger[] rho(BigInteger a, BigInteger b, BigInteger d, BigInteger p, BigInteger n) {
+    static BigInteger[] rho(BigInteger[] a, BigInteger[] b, BigInteger d, 
+                                                BigInteger p, BigInteger n) {
 
         BigInteger k = BigInteger.ZERO;
         BigInteger m;
@@ -158,18 +159,18 @@ public class ECurve {
 
         // set values for k = 1
         k.add(BigInteger.ONE);
-        kvals = rho_update(kvals, a, b, p);
-        kvals2 = rho_update(kvals, a, b, p);
+        kvals = rho_update(kvals, a, b, d, p);
+        kvals2 = rho_update(kvals, a, b, d, p);
 
         while (kvals.Z != kvals2.Z) { // until z_k == z_2k
             k.add(BigInteger.ONE);
 
             // update k values
-            kvals = rho_update(kvals, a, b, p);
+            kvals = rho_update(kvals, a, b, d, p);
 
             // update 2k values
-            kvals2 = rho_update(kvals2, a, b, p);
-            kvals2 = rho_update(kvals2, a, b, p); // run it twice
+            kvals2 = rho_update(kvals2, a, b, d, p);
+            kvals2 = rho_update(kvals2, a, b, d, p); // run it twice
 
             // handle exceptions
             if (kvals.A.subtract(kvals2.A) == BigInteger.ZERO.mod(n)) {
@@ -192,10 +193,10 @@ public class ECurve {
         public BigInteger B;
         public BigInteger[] Z;
 
-        public Tuple(BigInteger x, BigInteger y, BigInteger[] z) {
-            this.A = x;
-            this.B = y;
-            this.Z = z;
+        public Tuple(BigInteger alpha, BigInteger beta, BigInteger[] zeta) {
+            this.A = alpha;
+            this.B = beta;
+            this.Z = zeta;
         }
     }
 
@@ -203,7 +204,8 @@ public class ECurve {
      * Returns a new array with rho-updated values based on the the input array
      * For use with rho function.
      */
-    private static BigInteger[] rho_update(Tuple theseKvals, BigInteger a, BigInteger b, BigInteger p) {
+    private static BigInteger[] rho_update(Tuple theseKvals, BigInteger[] a, 
+                                BigInteger[] b, BigInteger d, BigInteger p) {
 
         Tuple newvals;
         BigInteger two = new BigInteger("2");
@@ -212,19 +214,19 @@ public class ECurve {
 
         switch (xCoord.mod(three).intValue()) {
             case 0:
-                newvals.A = theseKvals.A.add(BigInteger.ONE).mod(p);
+                newvals.A = (theseKvals.A).add(BigInteger.ONE).mod(p);
                 newvals.B = theseKvals.B;
-                newvals.Z = theseKvals.Z.multiply(b).mod(p);
+                newvals.Z = BigInteger.mul(theseKvals.Z, b, d, p);
                 break;
             case 1:
                 newvals.A = theseKvals.A.multiply(two).mod(p);
                 newvals.B = theseKvals.B.multiply(two).mod(p);
-                newvals.Z = theseKvals.Z  ??  theseKvals.Z;
+                newvals.Z = BigInteger.mul(theseKvals.Z, theseKvals.Z, d, p);
                 break;
             case 2:
                 newvals.A = theseKvals.A;
                 newvals.B = theseKvals.B.add(BigInteger.ONE).mod(p);
-                newvals.Z = a.multiply(theseKvals.Z).mod(p);
+                newvals.Z = BigInteger.mul(theseKvals.Z, a, d, p);
                 break;
             return newvals; 
         }
