@@ -6,7 +6,9 @@
 package algorithms;
 
 import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.security.SecureRandom;
+import java.lang.Math;
 
 /**
  *
@@ -18,8 +20,9 @@ public class hw3 extends javax.swing.JFrame {
     BigInteger[] u = new BigInteger[2];
     BigInteger d;
     BigInteger n;
-    BigInteger N;
-    BigInteger[] p = new BigInteger[4];
+    int N;
+    Double[] p = new Double[3];
+    BigInteger primeNum;
     SecureRandom random = new SecureRandom();
             
     /**
@@ -195,24 +198,24 @@ public class hw3 extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
+    private long passSettingsToDriver(){
+        long result;
+        Double tempPrime;
         loadValues();
-        p[3] = exp(p[0],p[1]);
-        p[3] = p[3].add(p[2]);
+
+        // calculate the requested prime number
+        tempPrime = new Double(Math.pow(p[0], p[1]) + p[2]);
+        primeNum = BigDecimal.valueOf(tempPrime).toBigInteger();
         displayValues();
-        
-        BigInteger[] t = ECurve.mul(a,u,d,p[3]);
-        txtOutput.append("\r\n");
-        txtOutput.append("a1 * u = " + t[0] + ", "  + t[1] +  "\r\n");
-        BigInteger m = new BigInteger(n.bitLength(), random);
-        m = m.mod(n);
-        BigInteger[] b = ECurve.exp(a, m, d, d);
-        txtOutput.append("\r\n");
-        txtOutput.append("b = " + b[0] + ", "  + b[1] +  "\r\n");
-        t = ECurve.mul(a,b,d,p[3]);
-        txtOutput.append("\r\n");
-        txtOutput.append("a1 * b = " + t[0] + ", "  + t[1] +  "\r\n");
-        
+
+        // calculate the average k given current request
+        result = App.driver(N, a, d, primeNum, n);
+        return result;
+    }
+
+    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
+        long result;
+        result = passSettingsToDriver();
     }//GEN-LAST:event_jButton1MouseClicked
 
     /**
@@ -278,9 +281,9 @@ public class hw3 extends javax.swing.JFrame {
         n = new BigInteger(txtn.getText());
         N = new BigInteger(txtN.getText());
         d = new BigInteger(txtd.getText());
-        p[0] = new BigInteger(txtp1.getText());
-        p[1] = new BigInteger(txtp2.getText());
-        p[2] = new BigInteger(txtp3.getText());
+        p[0] = Double.parseDouble(txtp1.getText());
+        p[1] = Double.parseDouble(txtp2.getText());
+        p[2] = Double.parseDouble(txtp3.getText());
     }
 
     private void displayValues() {
@@ -292,16 +295,4 @@ public class hw3 extends javax.swing.JFrame {
         txtOutput.append("P = " + p[3] + "\r\n");
     }
 
-    private BigInteger exp(BigInteger myB, BigInteger myP) {
-        BigInteger two = new BigInteger("2");
-        
-        if (myP.equals(BigInteger.ONE)) {
-            return myB;
-        } else if (myP.mod(two).equals(BigInteger.ONE)) {
-            return myB.multiply(exp(myB,myP.subtract(BigInteger.ONE)));
-        } else {
-            BigInteger temp = exp(myB, myP.divide(two));
-            return temp.multiply(temp);
-        }
-    }
 }

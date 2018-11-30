@@ -6,8 +6,8 @@
 package algorithms;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.security.spec.ECPoint;
+
 
 /**
  *
@@ -15,37 +15,20 @@ import java.security.spec.ECPoint;
  */
 public class ECurve {
     
-//    private final static BigInteger ZERO = new BigInteger("0");
-//    private final static BigInteger ONE  = new BigInteger("1");
-//    private final static BigInteger TWO  = new BigInteger("2");
-//    private final static SecureRandom random = new SecureRandom();
-//
-//    public static BigInteger rho(BigInteger N) {
-//        BigInteger divisor;
-//        BigInteger c  = new BigInteger(N.bitLength(), random);
-//        BigInteger x  = new BigInteger(N.bitLength(), random);
-//        BigInteger xx = x;
-//
-//        // check divisibility by 2
-//        if (N.mod(TWO).compareTo(ZERO) == 0) return TWO;
-//
-//        do {
-//            x  =  x.multiply(x).mod(N).add(c).mod(N);
-//            xx = xx.multiply(xx).mod(N).add(c).mod(N);
-//            xx = xx.multiply(xx).mod(N).add(c).mod(N);
-//            divisor = x.subtract(xx).gcd(N);
-//        } while((divisor.compareTo(ONE)) == 0);
-//
-//        return divisor;
-//    }
-//
-//    public static void factor(BigInteger N) {
-//        if (N.compareTo(ONE) == 0) return;
-//        if (N.isProbablePrime(20)) {System.out.println(N); return; }
-//        BigInteger divisor = rho(N);
-//        factor(divisor);
-//        factor(N.divide(divisor));
-//    }
+    /**
+     * Class to hold k values in rho function
+     */
+    public class ECTuple {
+        public BigInteger A;
+        public BigInteger B;
+        public BigInteger[] Z;
+
+        public ECTuple(BigInteger alpha, BigInteger beta, BigInteger[] zeta) {
+            this.A = alpha;
+            this.B = beta;
+            this.Z = zeta;
+        }
+    }
 
     /**
      * ECPoint
@@ -108,16 +91,14 @@ public class ECurve {
     }
     
     /**
-     * Implement a method BigInteger[] exp(BigInteger[] a,
-        BigInteger m, BigInteger d, BigInteger p) that computes the
-        curve point 𝑏 = 𝑎^𝑚 given a point 𝑎 represented as above, a
+     * computes the curve point 𝑏 = 𝑎^𝑚 given a point 𝑎 represented as above, a
         BigInteger exponent 𝑚, and values of 𝑑 and 𝑝.
      */
     static BigInteger[] exp(BigInteger[] a, BigInteger m, BigInteger d, 
         BigInteger p){
 
         BigInteger [] b = new BigInteger [2];
-        BigInteger two = new BigInteger("2");
+        BigInteger two =  BigInteger.TWO;
         
         if (m.equals(BigInteger.ONE)) {
             b[0] = a[0];
@@ -137,9 +118,7 @@ public class ECurve {
     
 
     /**
-     * Implement a method BigInteger[] rho(BigInteger[] a,
-        BigInteger[] b, BigInteger d, BigInteger p, BigInteger n) that,
-        given points 𝑎 and 𝑏 such that 𝑏 = 𝑎^𝑚 and the values of 𝑑, 𝑝, and
+     *  Given points 𝑎 and 𝑏 such that 𝑏 = 𝑎^𝑚 and the values of 𝑑, 𝑝, and
         𝑛, recovers the exponent (“discrete logarithm”) 𝑚 modulo 𝑛 and
         counts the number 𝑘 of steps necessary for that computation. The
         result must be contained in a BigInteger array containing exactly 2
@@ -148,14 +127,15 @@ public class ECurve {
     static BigInteger[] rho(BigInteger[] a, BigInteger[] b, BigInteger d, 
                                                 BigInteger p, BigInteger n) {
 
-        BigInteger k = BigInteger.ZERO;
         BigInteger m;
+        BigInteger k = BigInteger.ZERO;
+        BigInteger[] result = new BigInteger[2]; // [m,k]
         BigInteger[] zval = new BigInteger[2];
         zval[0] = BigInteger.ZERO;
         zval[1] = BigInteger.ONE;
-        BigInteger[] result = new BigInteger[2]; // [m,k]
-        Tuple kvals = new Tuple(BigInteger.ZERO, BigInteger.ZERO, zval);
-        Tuple kvals2 = new Tuple(BigInteger.ZERO, BigInteger.ZERO, zval);
+        ECTuple kvals = new ECurve.ECTuple(BigInteger.ZERO, BigInteger.ZERO, zval);
+        ECTuple kvals2 = new ECTuple(BigInteger.ZERO, BigInteger.ZERO, zval);
+        
 
         // set values for k = 1
         k.add(BigInteger.ONE);
@@ -174,7 +154,7 @@ public class ECurve {
 
             // handle exceptions
             if (kvals.A.subtract(kvals2.A) == BigInteger.ZERO.mod(n)) {
-                throw new IllegalArgumentException("Error in initial variables");
+                throw new RuntimeException("Error in initial variables");
             }
         }
 
@@ -186,71 +166,36 @@ public class ECurve {
     }
 
     /**
-     * Class to hold k values in rho function
-     */
-    public class Tuple {
-        public BigInteger A;
-        public BigInteger B;
-        public BigInteger[] Z;
-
-        public Tuple(BigInteger alpha, BigInteger beta, BigInteger[] zeta) {
-            this.A = alpha;
-            this.B = beta;
-            this.Z = zeta;
-        }
-    }
-
-    /**
      * Returns a new array with rho-updated values based on the the input array
      * For use with rho function.
      */
-    private static BigInteger[] rho_update(Tuple theseKvals, BigInteger[] a, 
+    private static ECTuple rho_update(ECTuple kvalTuple, BigInteger[] a, 
                                 BigInteger[] b, BigInteger d, BigInteger p) {
 
-        Tuple newvals;
-        BigInteger two = new BigInteger("2");
+        BigInteger two = BigInteger.TWO;
         BigInteger three = new BigInteger("3");
-        BigInteger xCoord = theseKvals.Z[0];
+        BigInteger xCoord = kvalTuple.Z[0];
+        ECTuple newvals = new ECTuple(BigInteger.ZERO, BigInteger.ZERO, kvalTuple.Z);
 
         switch (xCoord.mod(three).intValue()) {
             case 0:
-                newvals.A = (theseKvals.A).add(BigInteger.ONE).mod(p);
-                newvals.B = theseKvals.B;
-                newvals.Z = BigInteger.mul(theseKvals.Z, b, d, p);
-                break;
+                newvals.A = (kvalTuple.A).add(BigInteger.ONE).mod(p);
+                newvals.B = kvalTuple.B;
+                newvals.Z = mul(kvalTuple.Z, b, d, p);
             case 1:
-                newvals.A = theseKvals.A.multiply(two).mod(p);
-                newvals.B = theseKvals.B.multiply(two).mod(p);
-                newvals.Z = BigInteger.mul(theseKvals.Z, theseKvals.Z, d, p);
-                break;
+                newvals.A = kvalTuple.A.multiply(two).mod(p);
+                newvals.B = kvalTuple.B.multiply(two).mod(p);
+                newvals.Z = mul(kvalTuple.Z, kvalTuple.Z, d, p);
             case 2:
-                newvals.A = theseKvals.A;
-                newvals.B = theseKvals.B.add(BigInteger.ONE).mod(p);
-                newvals.Z = BigInteger.mul(theseKvals.Z, a, d, p);
-                break;
-            return newvals; 
+                newvals.A = kvalTuple.A;
+                newvals.B = kvalTuple.B.add(BigInteger.ONE).mod(p);
+                newvals.Z = mul(kvalTuple.Z, a, d, p);  
         }
-    }
-
-    /**
-     * Implement a method long check(BigInteger[] a, BigInteger d,
-        BigInteger p, BigInteger n) that, given a point 𝑎 and the values
-        𝑑, 𝑝, and 𝑛, generates a random BigInteger exponent 𝑚 modulo 𝑛,
-        computes 𝑏 = 𝑎^𝑚 using method exp(), recovers the discrete
-        logarithm 𝑚′ from 𝑎 and 𝑏 using method rho(), checks whether 𝑚 =
-        𝑚′ (and throws a RuntimeException if they don’t match) and returns
-        the number of steps 𝑘 that method rho needed to compute 𝑚. Also
-        implement a driver program that calls method check(...) a given
-        number 𝑁 of times, computes the average number 〈𝑘〉 = of 
-        steps needed to compute 𝑁 random discrete logarithms, and prints
-        the result.
-     */
-    static long check(BigInteger[] a, BigInteger d, BigInteger p, BigInteger n) {
-        return 0;
+        return newvals;
     }
     
     /**
-     * Used to divide to BigInteger mod p
+     * Function to divide a BigInteger with mod p
      * 
      * @param a
      * @param b
@@ -261,32 +206,4 @@ public class ECurve {
         return a.multiply(b.modInverse(p)).mod(p);
     }
  
-}
-
-public final class App {
-    private App() {
-    }
-
-    /**
-     * Runs 
-     * 
-     * @param args The arguments of the program.
-     */
-    public static void main(String[] args) {
-        /*
-        private string txtOutput = "";
-        private int p =  Math.pow(2, 16) - 17;  // prime number
-        private int d = 154;    // coefficient of the curve
-        private int n = 16339;   // given number of points on the curve
-        private List<Integer> a = new ArrayList<>(12, 61833);  // two points on the curve
-        private int N = 1000;
-        
-        private List<Integer>  u = new ArrayList<>(0, 1);    // the unit (neutral) element of point multiplication
-
-        BigInteger[] t = ECurve.mul(a, u, d, p[3]);
-        txtOutput.append("\r\n");
-        txtOutput.append("a1 * u = " + t[0] + ", " + t[1] + "\r\n");
-        System.out.println(txtOutput);
-        */
-    }
 }
