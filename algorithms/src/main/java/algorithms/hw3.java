@@ -6,7 +6,6 @@
 package algorithms;
 
 import java.math.BigInteger;
-import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.lang.Math;
 
@@ -21,6 +20,7 @@ public class hw3 extends javax.swing.JFrame {
     BigInteger d;
     BigInteger n;
     int N;
+    BigInteger primeInt;
     Double[] p = new Double[3];
     BigInteger primeNum;
     SecureRandom random = new SecureRandom();
@@ -198,24 +198,14 @@ public class hw3 extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private long passSettingsToDriver(){
-        long result;
-        Double tempPrime;
+    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
+        
+        long result; // catches return value from App.driver()
         loadValues();
-
-        // calculate the requested prime number
-        tempPrime = new Double(Math.pow(p[0], p[1]) + p[2]);
-        primeNum = BigDecimal.valueOf(tempPrime).toBigInteger();
+        primeInt = ECurve.calcPrime(p[0], p[1], p[2]);
+        result = App.driver(N, a, d, primeInt, n);
         displayValues();
 
-        // calculate the average k given current request
-        result = App.driver(N, a, d, primeNum, n);
-        return result;
-    }
-
-    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
-        long result;
-        result = passSettingsToDriver();
     }//GEN-LAST:event_jButton1MouseClicked
 
     /**
@@ -292,7 +282,7 @@ public class hw3 extends javax.swing.JFrame {
         txtOutput.append("d = " + d + "\r\n");
         txtOutput.append("n = " + n + "\r\n");
         txtOutput.append("N = " + N + "\r\n");
-        txtOutput.append("P = " + p[3] + "\r\n");
+        txtOutput.append("P = " + primeInt + "\r\n");
     }
 
 }

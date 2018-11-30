@@ -6,6 +6,7 @@
 package algorithms;
 
 import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.security.spec.ECPoint;
 
 
@@ -15,10 +16,11 @@ import java.security.spec.ECPoint;
  */
 public class ECurve {
     
-    /**
-     * Class to hold k values in rho function
-     */
+    
     public class ECTuple {
+        /**
+         * Class to hold k values in rho function
+         */
         public BigInteger A;
         public BigInteger B;
         public BigInteger[] Z;
@@ -29,6 +31,18 @@ public class ECurve {
             this.Z = zeta;
         }
     }
+
+    /**
+     * Returns a prime BigInteger calculated as q^r + s
+     */
+    public static BigInteger calcPrime(Double q, Double r, Double s) {
+        Double tempPrime;
+        BigInteger primeNum;
+        tempPrime = Math.pow(q, r) + s;
+        primeNum = BigDecimal.valueOf(tempPrime).toBigInteger();
+        return primeNum;
+    }
+
 
     /**
      * ECPoint
