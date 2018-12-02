@@ -23,7 +23,6 @@ public class hw3 extends javax.swing.JFrame {
     BigInteger primeInt;
     Double[] p = new Double[3];
     BigInteger primeNum;
-    SecureRandom random = new SecureRandom();
             
     /**
      * Creates new form hw3

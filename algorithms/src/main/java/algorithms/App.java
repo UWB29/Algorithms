@@ -55,6 +55,8 @@ public final class App {
         long mean_k = 0;
         
         // run N draws of check, adding k for each to a running total
+        System.out.println("input values: ");
+        System.out.println("a = (" +a[0]+","+a[1]+ "), d = " +d+ ", p = " +p+ ", n=" +n+ "\n");
         for(int draw=1; draw<=N ; draw++)
         {
             sum_k += (check(a, d, p, n));
@@ -62,7 +64,7 @@ public final class App {
         // compute number 〈𝑘〉 = of steps needed to compute 𝑁 random discrete
         // logarithms
         mean_k = sum_k/N;
-        System.out.println(mean_k);
+        System.out.println("mean k = " + mean_k);
         return mean_k;
          
     }

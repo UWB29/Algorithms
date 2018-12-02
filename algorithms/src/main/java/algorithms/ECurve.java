@@ -38,7 +38,8 @@ public class ECurve {
     public static BigInteger calcPrime(Double q, Double r, Double s) {
         Double tempPrime;
         BigInteger primeNum;
-        tempPrime = Math.pow(q, r) + s;
+        System.out.print("primeInt = " +q+ "^" +r+ " - " +s+ "\n");
+        tempPrime = Math.pow(q, r) - s;
         primeNum = BigDecimal.valueOf(tempPrime).toBigInteger();
         return primeNum;
     }
@@ -126,7 +127,7 @@ public class ECurve {
             b[0] = b[0].multiply(b[0]).mod(p);
             b[1] = b[1].multiply(b[0]).mod(p);
         }
-        
+
         return b;
     }
     
@@ -142,40 +143,33 @@ public class ECurve {
                                                 BigInteger p, BigInteger n) {
 
         BigInteger m;
-        BigInteger k = BigInteger.ZERO;
+        int k = 0;
         BigInteger[] result = new BigInteger[2]; // [m,k]
         BigInteger[] zval = new BigInteger[2];
         zval[0] = BigInteger.ZERO;
         zval[1] = BigInteger.ONE;
         ECTuple kvals = new ECTuple(BigInteger.ZERO, BigInteger.ZERO, zval);
         ECTuple kvals2 = new ECTuple(BigInteger.ZERO, BigInteger.ZERO, zval);
-        
-
         // set values for k = 1
-        k.add(BigInteger.ONE);
+        k += 1;
         kvals = rho_update(kvals, a, b, d, p);
         kvals2 = rho_update(kvals, a, b, d, p);
-
+        // repeat until value is found                
         while (kvals.Z != kvals2.Z) { // until z_k == z_2k
-            k.add(BigInteger.ONE);
-
+            k += 1;
             // update k values
             kvals = rho_update(kvals, a, b, d, p);
-
-            // update 2k values
-            kvals2 = rho_update(kvals2, a, b, d, p);
-            kvals2 = rho_update(kvals2, a, b, d, p); // run it twice
-
+            // update 2k values, running rho_update twice
+            kvals2 = rho_update(rho_update(kvals2, a, b, d, p), a, b, d, p);
             // handle exceptions
             if (kvals.A.subtract(kvals2.A) == BigInteger.ZERO.mod(n)) {
-                throw new RuntimeException("Error in initial variables");
+                throw new RuntimeException("Error at k = " + k + " . A_k == A_k2");
             }
         }
-
         // Determine m from sextuple values, then return results
         m = (kvals2.B.subtract(kvals.B)).divide(kvals2.A.subtract(kvals.A)).mod(n);
         result[0] = m;
-        result[1] = k;
+        result[1] = BigInteger.valueOf(k);
         return result;
     }
 
@@ -193,17 +187,20 @@ public class ECurve {
 
         switch (xCoord.mod(three).intValue()) {
             case 0:
-                newvals.A = (kvalTuple.A).add(BigInteger.ONE).mod(p);
-                newvals.B = kvalTuple.B;
                 newvals.Z = mul(kvalTuple.Z, b, d, p);
+                newvals.A = (kvalTuple.A).add(BigInteger.ONE);
+                newvals.B = kvalTuple.B;
+                break;
             case 1:
-                newvals.A = kvalTuple.A.multiply(two).mod(p);
-                newvals.B = kvalTuple.B.multiply(two).mod(p);
                 newvals.Z = mul(kvalTuple.Z, kvalTuple.Z, d, p);
+                newvals.A = kvalTuple.A.multiply(two).mod(p);
+                newvals.B = kvalTuple.B.multiply(two).mod(p); 
+                break;
             case 2:
+                newvals.Z = mul(kvalTuple.Z, a, d, p);
                 newvals.A = kvalTuple.A;
-                newvals.B = kvalTuple.B.add(BigInteger.ONE).mod(p);
-                newvals.Z = mul(kvalTuple.Z, a, d, p);  
+                newvals.B = kvalTuple.B.add(BigInteger.ONE);
+                break;
         }
         return newvals;
     }
