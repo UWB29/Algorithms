@@ -269,7 +269,7 @@ public class hw3 extends javax.swing.JFrame {
         u[0] = BigInteger.ZERO;
         u[1] = BigInteger.ONE;
         n = new BigInteger(txtn.getText());
-        N = new BigInteger(txtN.getText());
+        N = Integer.parseInt(txtN.getText());
         d = new BigInteger(txtd.getText());
         p[0] = Double.parseDouble(txtp1.getText());
         p[1] = Double.parseDouble(txtp2.getText());

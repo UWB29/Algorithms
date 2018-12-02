@@ -17,13 +17,13 @@ import java.security.spec.ECPoint;
 public class ECurve {
     
     
-    public class ECTuple {
+    public static class ECTuple {
         /**
          * Class to hold k values in rho function
          */
-        public BigInteger A;
-        public BigInteger B;
-        public BigInteger[] Z;
+        public BigInteger A = BigInteger.ZERO;
+        public BigInteger B = BigInteger.ONE;
+        public BigInteger[] Z = new BigInteger[2];
 
         public ECTuple(BigInteger alpha, BigInteger beta, BigInteger[] zeta) {
             this.A = alpha;
@@ -147,7 +147,7 @@ public class ECurve {
         BigInteger[] zval = new BigInteger[2];
         zval[0] = BigInteger.ZERO;
         zval[1] = BigInteger.ONE;
-        ECTuple kvals = new ECurve.ECTuple(BigInteger.ZERO, BigInteger.ZERO, zval);
+        ECTuple kvals = new ECTuple(BigInteger.ZERO, BigInteger.ZERO, zval);
         ECTuple kvals2 = new ECTuple(BigInteger.ZERO, BigInteger.ZERO, zval);
         
 

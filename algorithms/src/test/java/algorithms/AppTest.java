@@ -1,4 +1,4 @@
-algorithms
+package algorithms;
 
 import org.junit.Test;
 
@@ -13,6 +13,7 @@ public class AppTest {
      */
     @Test
     public void testApp() {
+        /** 
         int primeNum;
         BigInteger result;
 
@@ -24,6 +25,6 @@ public class AppTest {
         result = App.driver(N, a, d, p, n);
         return result;
         
-    }
+        */
     }
 }
