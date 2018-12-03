@@ -59,6 +59,7 @@ public final class App {
         System.out.println("a = (" +a[0]+","+a[1]+ "), d = " +d+ ", p = " +p+ ", n=" +n+ "\n");
         for(int draw=1; draw<=N ; draw++)
         {
+            System.out.println("draw " + draw);
             sum_k += (check(a, d, p, n));
         }
         // compute number 〈𝑘〉 = of steps needed to compute 𝑁 random discrete
