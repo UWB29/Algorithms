@@ -66,7 +66,6 @@ public class ECurve {
         
         t4 = t1.multiply(t2).multiply(d).mod(p); //d*(t1*t2)%p
         t4 = BigInteger.ONE.add(t4).mod(p);  //(1+t4)%P
-        System.out.print("\n t3 " +t3 + ", t4 " + t4 + "\n");
         a3[0] = Dev(t3,t4,p);              //(t3/t4)%P
         
         // calculate y for a3
@@ -76,7 +75,6 @@ public class ECurve {
         
         t4 = t1.multiply(t2).multiply(d).mod(p); //d*(t1*t2)%p
         t4 = BigInteger.ONE.subtract(t4).mod(p);//(1+t4)%P
-        System.out.print("\n t3 " + t3 + ", t4 " + t4 + "\n");
         a3[1] = Dev(t3,t4,p);                   //(t3/t4)%p
         return a3;
     }
@@ -116,7 +114,6 @@ public class ECurve {
                 b = mul(a, b, d, p);
             }
         }
-    
         return b;
     }
     
@@ -148,7 +145,6 @@ public class ECurve {
         // repeat until z_k == z_2k 
         while (!Arrays.equals(kvals.Z,kvals2.Z)) {               
             k += 1;
-            System.out.print("\n"+k);
             // update k values
             kvals = rho_update(kvals, a, b, d, p, n);
             // update 2k values, running rho_update twice
@@ -160,9 +156,8 @@ public class ECurve {
             }
         }
 
-        System.out.print("final k = " +k +"\n");
         // Determine m from sextuple values, then return results
-        m = Dev(kvals2.B.subtract(kvals.B),kvals2.A.subtract(kvals.A), n);
+        m = Dev(kvals2.B.subtract(kvals.B),kvals.A.subtract(kvals2.A), n);
         result[0] = m;
         result[1] = BigInteger.valueOf(k);
         return result;
@@ -183,20 +178,18 @@ public class ECurve {
         switch (xCoord.mod(three).intValue()) {
             case 0:
                 newvals.Z = mul(b, kvalTuple.Z, d, p);
-                newvals.A = (kvalTuple.A).add(BigInteger.ONE).mod(p);
+                newvals.A = (kvalTuple.A).add(BigInteger.ONE);
                 newvals.B = kvalTuple.B;
                 break;
             case 1:
                 newvals.Z = mul(kvalTuple.Z, kvalTuple.Z, d, p);
-                newvals.A = kvalTuple.A.multiply(two).mod(p);
-                newvals.B = kvalTuple.B.multiply(two).mod(p); 
+                newvals.A = kvalTuple.A.multiply(two);
+                newvals.B = kvalTuple.B.multiply(two); 
                 break;
             case 2:
-                System.out.print("\n " + a[0] + " "  + a[1] + ", " +
-                           kvalTuple.Z[0]+ " " + kvalTuple.Z[1] +"\n");
                 newvals.Z = mul(a, kvalTuple.Z, d, p);
                 newvals.A = kvalTuple.A;
-                newvals.B = kvalTuple.B.add(BigInteger.ONE).mod(p);
+                newvals.B = kvalTuple.B.add(BigInteger.ONE);
                 break;
         }
         return newvals;
@@ -215,7 +208,6 @@ public class ECurve {
         try {
             t = a.multiply(b.modInverse(p)).mod(p);
         } catch (Exception e) {
-            System.out.print("\n " + a + " " + b + "\n");
             throw new RuntimeException("Erroneous value for b: " + b);
         }
         return t;

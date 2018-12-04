@@ -34,7 +34,7 @@ public final class App {
         // recover discrete log
         BigInteger[] m_k = ECurve.rho(a, b, d, p, n);
         // validate
-        if (m == m_k[0]) {
+        if (m.equals(m_k[0])) {
             return m_k[1].longValue();
         } else {
             throw new RuntimeException("m (" + m +") does not match m' (" + m_k[0] +")");
@@ -66,7 +66,7 @@ public final class App {
         // compute number 〈𝑘〉 = of steps needed to compute 𝑁 random discrete
         // logarithms
         mean_k = sum_k/N;
-        System.out.println("mean k = " + mean_k);
+        System.out.println("mean k = " + mean_k + "\n");
         return mean_k;
          
     }

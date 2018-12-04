@@ -103,5 +103,9 @@ public class AppTest {
     @Test
     public void testApp() {
         test_main();
+        test_a();
+        test_b();
+        test_c();
+
     }
 }
