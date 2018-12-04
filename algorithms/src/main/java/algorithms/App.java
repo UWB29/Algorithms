@@ -26,9 +26,9 @@ public final class App {
     public static long check(BigInteger[] a, BigInteger d, BigInteger p, BigInteger n) {
         // generate random exponent
         SecureRandom random = new SecureRandom();
-        // BigInteger m = new BigInteger(n.bitLength(), random);
-        //m = m.mod(n);
-        BigInteger m=new BigInteger("17");
+        BigInteger m = new BigInteger(n.bitLength(), random);
+        m = m.mod(n);
+        //Test m:  BigInteger m=new BigInteger("17");
         // compute b
         BigInteger[] b = ECurve.exp(a, m, d, p);
         // recover discrete log
@@ -54,7 +54,7 @@ public final class App {
         BigInteger p, BigInteger n) {
         long sum_k = 0;
         long mean_k = 0;
-        N = 1;
+        N = 1000;
         // run N draws of check, adding k for each to a running total
         System.out.println("input values: ");
         System.out.println("a = (" +a[0]+","+a[1]+ "), d = " +d+ ", p = " +p+ ", n=" +n+ "\n");
