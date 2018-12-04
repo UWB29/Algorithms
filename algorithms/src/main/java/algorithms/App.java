@@ -38,7 +38,7 @@ public final class App {
             if (m_k[1].equals(BigInteger.ZERO)) {
                 return 0;
             } else {
-                throw new RuntimeException("m (" + m +") does not match m' (" + m_k[0] +")");
+                throw new RuntimeException("m (" +m+ ") does not match m' (" + m_k[0] +")");
             }
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
@@ -63,19 +63,22 @@ public final class App {
         // run N draws of check, adding k for each to a running total
         System.out.println("input values: ");
         System.out.println("a = (" +a[0]+","+a[1]+ "), d = " +d+ ", p = " +p+ ", n=" +n+ "\n");
+        long startTime = System.currentTimeMillis();
         for(int draw=1; draw<=N ; draw++)
         {
             try {
                 current_k = check(a, d, p, n);
                 sum_k += current_k;
             } catch (RuntimeException e) {
-                throw new RuntimeException(e);
+                draw --;
             }
         }
+        long stopTime = System.currentTimeMillis();
         // compute number 〈𝑘〉 = of steps needed to compute 𝑁 random discrete
         // logarithms
         mean_k = sum_k/N;
-        System.out.println("mean k = " + mean_k + ", successful N = " + N +"\n");
+        System.out.println("mean k = " + mean_k + "\n");
+        System.out.println("Time to run = " + (stopTime - startTime) + " miliseconds");
         return mean_k;
          
     }
