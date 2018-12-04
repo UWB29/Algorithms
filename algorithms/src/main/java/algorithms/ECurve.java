@@ -90,7 +90,6 @@ public class ECurve {
         b[0] = BigInteger.ZERO;
         b[1] = BigInteger.ONE;
         BigInteger two =  BigInteger.TWO;
-        
         /*
         if (m.equals(BigInteger.ZERO)) {
             b[0] = BigInteger.ZERO;
@@ -151,11 +150,13 @@ public class ECurve {
             kvals2 = rho_update(rho_update(kvals2, a, b, d, p, n), a, b, d, p, n);
             // handle exceptions where " Alpha_z - Alpha_2z = 0(mod n) "
             if ((kvals.A.subtract(kvals2.A).mod(n)).equals(BigInteger.ZERO)) {
-                throw new RuntimeException("Error at k = " + k 
+                System.out.println("Error at k = " + k 
                                             + " (alpha_k == alpha_k2)");
+                result[0] = BigInteger.ZERO;
+                result[1] = BigInteger.ZERO;
+                return result;
             }
         }
-
         // Determine m from sextuple values, then return results
         m = Dev(kvals2.B.subtract(kvals.B),kvals.A.subtract(kvals2.A), n);
         result[0] = m;

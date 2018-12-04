@@ -29,6 +29,7 @@ public final class App {
         BigInteger m = new BigInteger(n.bitLength(), random);
         m = m.mod(n);
         //Test m:  BigInteger m=new BigInteger("17");
+        
         // compute b
         BigInteger[] b = ECurve.exp(a, m, d, p);
         // recover discrete log
@@ -36,7 +37,10 @@ public final class App {
         // validate
         if (m.equals(m_k[0])) {
             return m_k[1].longValue();
-        } else {
+        } else if (m_k[1].equals(BigInteger.ZERO)) {
+            System.out.println("     m = " + m);
+            return 0;
+        }else {
             throw new RuntimeException("m (" + m +") does not match m' (" + m_k[0] +")");
         }
     }
@@ -52,6 +56,7 @@ public final class App {
      */
     public static long driver(int N, BigInteger[] a, BigInteger d, 
         BigInteger p, BigInteger n) {
+        long current_k = 0;
         long sum_k = 0;
         long mean_k = 0;
         N = 1000;
@@ -60,8 +65,11 @@ public final class App {
         System.out.println("a = (" +a[0]+","+a[1]+ "), d = " +d+ ", p = " +p+ ", n=" +n+ "\n");
         for(int draw=1; draw<=N ; draw++)
         {
-            System.out.println("draw " + draw);
-            sum_k += (check(a, d, p, n));
+            current_k = check(a, d, p, n);
+            sum_k += current_k;
+            if (current_k == 0) {
+                N -= 1;
+            }
         }
         // compute number 〈𝑘〉 = of steps needed to compute 𝑁 random discrete
         // logarithms

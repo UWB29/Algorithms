@@ -14,7 +14,7 @@ public class AppTest {
     /**
      * Test settings from main instructions
      */
-    public void test_main() {
+    public long test_main() {
         Double[] p = new Double[3];
         p[0] = 2.0;
         p[1] = 16.0;
@@ -26,13 +26,13 @@ public class AppTest {
         a[1] = new BigInteger("61833");
         int N = 1000;
         
-        settingsTest(p, d, n, a, N);
+        return (settingsTest(p, d, n, a, N));
     }
     
     /**
      * Test "a" settings
      */
-    public void test_a() {
+    public long test_a() {
         Double[] p = new Double[3];
         p[0] = 2.0;
         p[1] = 18.0;
@@ -44,13 +44,13 @@ public class AppTest {
         a[1] = new BigInteger("261901");
         int N = 1000;
        
-        settingsTest(p, d, n, a, N); 
+        return (settingsTest(p, d, n, a, N));
     }
 
     /**
      * Test "a" settings
      */
-    public void test_b() {
+    public long test_b() {
         Double[] p = new Double[3];
         p[0] = 2.0;
         p[1] = 20.0;
@@ -62,13 +62,13 @@ public class AppTest {
         a[1] = new BigInteger("111745");
         int N = 1000;
 
-        settingsTest(p, d, n, a, N);
+        return (settingsTest(p, d, n, a, N));
     }
 
     /**
      * Test "b" settings
      */
-    public void test_c() {
+    public long test_c() {
         Double[] p = new Double[3];
         p[0] = 2.0;
         p[1] = 22.0;
@@ -80,13 +80,13 @@ public class AppTest {
         a[1] = new BigInteger("85081");
         int N = 1000;
 
-        settingsTest(p, d, n, a, N);
+        return(settingsTest(p, d, n, a, N));
     }
 
     /**
      * Accept settings as arguments
      */
-    private static void settingsTest(Double[] p, BigInteger d, BigInteger n, 
+    private long settingsTest(Double[] p, BigInteger d, BigInteger n, 
                                 BigInteger[] a, int N) {
         BigInteger primeInt;
         long result;
@@ -95,6 +95,7 @@ public class AppTest {
         primeInt = ECurve.calcPrime(p[0], p[1], p[2]);
         result = App.driver(N, a, d, primeInt, n);
         System.out.print(result);
+        return result;
     }
 
     /**
@@ -102,10 +103,12 @@ public class AppTest {
      */
     @Test
     public void testApp() {
-        test_main();
-        test_a();
-        test_b();
-        test_c();
-
+        long[] results = new long[4];
+        results[0] = test_main();
+        results[1] = test_a();
+        results[2] = test_b();
+        //results[3] = test_c();
+        System.out.print("\n"+results[0] + ",  " + results[1] + ",  " +
+            results[2] + "\n");
     }
 }
