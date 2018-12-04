@@ -107,8 +107,8 @@ public class AppTest {
         results[0] = test_main();
         results[1] = test_a();
         results[2] = test_b();
-        //results[3] = test_c();
+        results[3] = test_c();
         System.out.print("\n"+results[0] + ",  " + results[1] + ",  " +
-            results[2] + "\n");
+            results[2] +" " + results[2] + "\n");
     }
 }

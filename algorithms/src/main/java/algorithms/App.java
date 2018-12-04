@@ -29,19 +29,22 @@ public final class App {
         BigInteger m = new BigInteger(n.bitLength(), random);
         m = m.mod(n);
         //Test m:  BigInteger m=new BigInteger("17");
-        
         // compute b
         BigInteger[] b = ECurve.exp(a, m, d, p);
         // recover discrete log
-        BigInteger[] m_k = ECurve.rho(a, b, d, p, n);
-        // validate
-        if (m.equals(m_k[0])) {
-            return m_k[1].longValue();
-        } else if (m_k[1].equals(BigInteger.ZERO)) {
-            System.out.println("     m = " + m);
-            return 0;
-        }else {
-            throw new RuntimeException("m (" + m +") does not match m' (" + m_k[0] +")");
+        try {
+            BigInteger[] m_k = ECurve.rho(a, b, d, p, n);
+            // validate
+            if (m.equals(m_k[0])) {
+                return m_k[1].longValue();
+            } else if (m_k[1].equals(BigInteger.ZERO)) {
+                //System.out.println("     m = " + m);
+                return 0;
+            }else {
+                throw new RuntimeException("m (" + m +") does not match m' (" + m_k[0] +")");
+            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -65,16 +68,20 @@ public final class App {
         System.out.println("a = (" +a[0]+","+a[1]+ "), d = " +d+ ", p = " +p+ ", n=" +n+ "\n");
         for(int draw=1; draw<=N ; draw++)
         {
-            current_k = check(a, d, p, n);
-            sum_k += current_k;
-            if (current_k == 0) {
-                N -= 1;
+            try {
+                current_k = check(a, d, p, n);
+                sum_k += current_k;
+                if (current_k == 0) {
+                    N -= 1;
+                }
+            } catch (RuntimeException e) {
+                throw new RuntimeException(e);
             }
         }
         // compute number 〈𝑘〉 = of steps needed to compute 𝑁 random discrete
         // logarithms
         mean_k = sum_k/N;
-        System.out.println("mean k = " + mean_k + "\n");
+        System.out.println("mean k = " + mean_k + ", successful N = " + N +"\n");
         return mean_k;
          
     }

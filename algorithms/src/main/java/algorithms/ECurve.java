@@ -58,24 +58,28 @@ public class ECurve {
 
         BigInteger[] a3 = new BigInteger[2];
         BigInteger t1, t2, t3, t4;
-        
+
         // calculate x for a3
-        t1 = a1[0].multiply(a2[1]).mod(p); //(x1*y2)%p
-        t2 = a1[1].multiply(a2[0]).mod(p); //(y1*x2)%p
-        t3 = t1.add(t2).mod(p);            //(t1+t2)%p
-        
-        t4 = t1.multiply(t2).multiply(d).mod(p); //d*(t1*t2)%p
-        t4 = BigInteger.ONE.add(t4).mod(p);  //(1+t4)%P
-        a3[0] = Dev(t3,t4,p);              //(t3/t4)%P
-        
+        t1 = a1[0].multiply(a2[1]).mod(p); // (x1*y2)%p
+        t2 = a1[1].multiply(a2[0]).mod(p); // (y1*x2)%p
+        t3 = t1.add(t2).mod(p); // (t1+t2)%p
+
+        t4 = t1.multiply(t2).mod(p); // (t1*t2)%p
+        t4 = t4.multiply(d).mod(p); // (t4*d)%p
+        t4 = BigInteger.ONE.add(t4).mod(p);// (1+t4)%P
+
+        a3[0] = Dev(t3, t4, p); // (t3/t4)%P
+
         // calculate y for a3
-        t1 = a1[1].multiply(a2[1]).mod(p); //(y1*y2)%p
-        t2 = a1[0].multiply(a2[0]).mod(p); //(x1*x2)%p
-        t3 = t1.subtract(t2).mod(p);       //(t1-t2)%p
-        
-        t4 = t1.multiply(t2).multiply(d).mod(p); //d*(t1*t2)%p
-        t4 = BigInteger.ONE.subtract(t4).mod(p);//(1+t4)%P
-        a3[1] = Dev(t3,t4,p);                   //(t3/t4)%p
+        t1 = a1[1].multiply(a2[1]).mod(p); // (y1*y2)%p
+        t2 = a1[0].multiply(a2[0]).mod(p); // (x1*x2)%p
+        t3 = t1.subtract(t2).mod(p); // (t1-t2)%p
+
+        t4 = t1.multiply(t2).mod(p); // (t1*t2)%p
+        t4 = t4.multiply(d).mod(p); // (t4*d)%p
+        t4 = BigInteger.ONE.subtract(t4).mod(p);// (1+t4)%P
+
+        a3[1] = Dev(t3, t4, p); // (t3/t4)%p
         return a3;
     }
     
@@ -89,25 +93,8 @@ public class ECurve {
         BigInteger [] b = new BigInteger [2];
         b[0] = BigInteger.ZERO;
         b[1] = BigInteger.ONE;
-        BigInteger two =  BigInteger.TWO;
-        /*
-        if (m.equals(BigInteger.ZERO)) {
-            b[0] = BigInteger.ZERO;
-            b[1] = BigInteger.ONE;
-        } else if (m.equals(BigInteger.ONE)) {
-            b[0] = a[0];
-            b[1] = a[1];
-        } else if (m.mod(two).equals(BigInteger.ONE)) { // if m is odd
-            b = exp(a, m.subtract(BigInteger.ONE), d, p); // recursive call
-            b[0] = b[0].multiply(a[0]).mod(p);
-            b[1] = b[1].multiply(a[1]).mod(p);
-        } else { // m is even
-            b = exp(a, m.divide(two), d, p); // recursive call
-            b[0] = b[0].multiply(b[0]).mod(p);
-            b[1] = b[1].multiply(b[1]).mod(p);
-        }
-        */
-        for (int i = m.bitLength() -1; i >=0; i --){
+
+        for (int i = m.bitLength() - 1; i >= 0; i--) {
             b = mul(b, b, d, p);
             if (m.testBit(i)) {
                 b = mul(a, b, d, p);
@@ -138,23 +125,19 @@ public class ECurve {
 
         // Iiniialize values for K and 2K
         k = 1;
-        kvals = rho_update(kvals, a, b, d, p, n);
-        kvals2 = rho_update(rho_update(kvals2, a, b, d, p, n), a, b, d, p, n);
+        kvals = rho_update(kvals, a, b, d, p);
+        kvals2 = rho_update(rho_update(kvals2, a, b, d, p), a, b, d, p);
         
         // repeat until z_k == z_2k 
         while (!Arrays.equals(kvals.Z,kvals2.Z)) {               
             k += 1;
             // update k values
-            kvals = rho_update(kvals, a, b, d, p, n);
+            kvals = rho_update(kvals, a, b, d, p);
             // update 2k values, running rho_update twice
-            kvals2 = rho_update(rho_update(kvals2, a, b, d, p, n), a, b, d, p, n);
+            kvals2 = rho_update(rho_update(kvals2, a, b, d, p), a, b, d, p);
             // handle exceptions where " Alpha_z - Alpha_2z = 0(mod n) "
             if ((kvals.A.subtract(kvals2.A).mod(n)).equals(BigInteger.ZERO)) {
-                System.out.println("Error at k = " + k 
-                                            + " (alpha_k == alpha_k2)");
-                result[0] = BigInteger.ZERO;
-                result[1] = BigInteger.ZERO;
-                return result;
+                throw new RuntimeException("Error at k = " + k + " (alpha_k == alpha_k2)");
             }
         }
         // Determine m from sextuple values, then return results
@@ -169,7 +152,7 @@ public class ECurve {
      * For use with rho function.
      */
     private static ECTuple rho_update(ECTuple kvalTuple, BigInteger[] a, 
-                    BigInteger[] b, BigInteger d, BigInteger p, BigInteger n) {
+                                        BigInteger[] b, BigInteger d, BigInteger p) {
 
         BigInteger two = BigInteger.TWO;
         BigInteger three = new BigInteger("3");
@@ -185,7 +168,7 @@ public class ECurve {
             case 1:
                 newvals.Z = mul(kvalTuple.Z, kvalTuple.Z, d, p);
                 newvals.A = kvalTuple.A.multiply(two);
-                newvals.B = kvalTuple.B.multiply(two); 
+                newvals.B = kvalTuple.B.multiply(two);
                 break;
             case 2:
                 newvals.Z = mul(a, kvalTuple.Z, d, p);
