@@ -35,12 +35,9 @@ public final class App {
         try {
             BigInteger[] m_k = ECurve.rho(a, b, d, p, n);
             // validate
-            if (m.equals(m_k[0])) {
-                return m_k[1].longValue();
-            } else if (m_k[1].equals(BigInteger.ZERO)) {
-                //System.out.println("     m = " + m);
+            if (m_k[1].equals(BigInteger.ZERO)) {
                 return 0;
-            }else {
+            } else {
                 throw new RuntimeException("m (" + m +") does not match m' (" + m_k[0] +")");
             }
         } catch (RuntimeException e) {
@@ -71,9 +68,6 @@ public final class App {
             try {
                 current_k = check(a, d, p, n);
                 sum_k += current_k;
-                if (current_k == 0) {
-                    N -= 1;
-                }
             } catch (RuntimeException e) {
                 throw new RuntimeException(e);
             }
